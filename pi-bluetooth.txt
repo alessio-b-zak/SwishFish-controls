@@ -1,0 +1,20 @@
+To pair a Pi with the HC05 chip, run the following:
+
+$ bluetoothctl      # Start bluetooth agent manager
+$ power on          # Power on bluetooth
+$ pairable on       # Enable pairing
+$ agent on          # Turn on pairing agent
+$ scan on           # Scan for devices, wait ~30 seconds
+$ scan off          # Stop the scanning after 30 seconds
+
+$ pair 98:D3:32:11:67:C2        # Pair with the HC05 chip
+$ trust 98:D3:32:11:67:C2       # Trust the chip
+$ quit                          # Quit the BT manager
+
+Once this is done, confirm that pairing is successful by manually connecting to
+the HC05 chip by running the following:
+
+$ sudo rfcomm connect hci0 98:D3:32:11:67:C2
+
+If connection is successful, then the pairing works. You can Ctrl-C to close
+this connection. You can now connect to the HC05 chip using a python script.
