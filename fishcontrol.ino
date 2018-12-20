@@ -1,13 +1,5 @@
-/* Sweep
-by BARRAGAN <http://barraganstudio.com>
-This example code is in the public domain.
-
-modified 8 Nov 2013
-by Scott Fitzgerald
-http://www.arduino.cc/en/Tutorial/Sweep
-*/
-
 #include <Servo.h>
+#include <TimedAction.h>
 
 
 //pin9 rudder
@@ -20,7 +12,63 @@ Servo myservo2;
 
 int ByteReceived;
 
-char data = 0; // From BT
+int turn;
+int forward;
+
+
+
+void read_serial() {
+  if (Serial.available() > 0)
+    {
+        ByteReceived = Serial.read();
+        Serial.print(ByteReceived);
+        Serial.print("        ");
+        Serial.print(ByteReceived, HEX);
+        Serial.print("       ");
+        Serial.print(char(ByteReceived));
+        if(ByteReceived == '2') // Single Quote! This is a character.
+        {
+            forward = 1;
+            turn = 1;
+        }
+        if(ByteReceived == '1')
+        {
+          turn = 0;
+          forward = 1;
+        }
+        if(ByteReceived == '0')
+        {
+          turn = 2;
+          forward = 1;
+        }
+        if(ByteReceived == '3')
+        {
+          forward = 0;
+        }
+}
+}
+
+void rotate_flippers() {
+  if (forward == 1) {
+    rotate_servos();
+    myservo1.write(90);
+    myservo2.write(0);
+  }
+}
+
+void turn_flipper() {
+  if (turn == 1) {
+      myservo0.write(90);
+  }
+    if (turn == 0) {
+      myservo0.write(180);
+  }
+    if (turn == 2) {
+      myservo0.write(0);
+  }
+}
+
+char data = 0; // From BTs
 
 int pos = 0;    // variable to store the servo position
 
@@ -67,42 +115,12 @@ void rotate_servos() {
 }
 
 
+TimedAction turnforward = TimedAction(100, rotate_flippers);
+TimedAction turnturn = TimedAction(100, turn_flipper);
+TimedAction readserial = TimedAction(100, read_serial);
+
 void loop() {
-    if (Serial.available() > 0)
-    {
-        ByteReceived = Serial.read();
-        Serial.print(ByteReceived);
-        Serial.print("        ");
-        Serial.print(ByteReceived, HEX);
-        Serial.print("       ");
-        Serial.print(char(ByteReceived));
-        if(ByteReceived == '1') // Single Quote! This is a character.
-        {
-            rotate_servos();
-            myservo1.write(90);
-            myservo2.write(0);
-            Serial.print(" LED ON ");
-            flash_led(1);
-        }
-        if(ByteReceived == '2')
-        {
-            myservo0.write(0);
-            flash_led(2);
-        }
-        if(ByteReceived == '3')
-        {
-            myservo1.write(90);
-            myservo2.write(0);
-            flash_led(3);
-        }
-        if(ByteReceived == '4')
-        {
-            myservo0.write(90);
-            flash_led(4);
-        }
-        Serial.println();    // End the line
-
-        // END Serial Available
-    }
-
+  readserial.check();
+  turnforward.check();
+  turnturn.check();  
 }
